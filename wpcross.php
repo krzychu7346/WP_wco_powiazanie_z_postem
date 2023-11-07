@@ -1,14 +1,13 @@
 <?php
 /*
-Plugin Name: Custom Cross-Selling
+Plugin Name: WCO Wpisy blogowe na karcie produktu (realizacje)
 Description: Dodaje wpisy blogowe jako kafelki w WooCommerce.
-Version: 1.0
+Version: 1.1
 Author: Antime
 */
 
-
 // Dodaj pole dla produktu WooCommerce do wyboru wpisów blogowych
-function custom_cross_selling_product_field()
+function custom_powiazane_realizacje_product_field()
 {
     echo '<div class="options_group">';
     woocommerce_wp_text_input(array(
@@ -16,117 +15,94 @@ function custom_cross_selling_product_field()
         'label' => __('ID Wpisów Blogowych', 'woocommerce'),
         'desc_tip' => 'Podaj ID wpisów blogowych oddzielone przecinkami.',
     ));
-    
+
     echo '</div>';
 }
 
-add_action('woocommerce_product_options_related', 'custom_cross_selling_product_field');
+add_action('woocommerce_product_options_related', 'custom_powiazane_realizacje_product_field');
 
 // Zapisz ID wpisów blogowych do metadanych produktu
-function custom_cross_selling_save_product_field($post_id)
+function custom_cross_powiazane_realizacje_product_field($post_id)
 {
-    $cross_selling_posts = sanitize_text_field($_POST['powiazane_realizacje']);
-    update_post_meta($post_id, 'powiazane_realizacje', $cross_selling_posts);
+    $powiazane_realizacje_posts = sanitize_text_field($_POST['powiazane_realizacje']);
+    update_post_meta($post_id, 'powiazane_realizacje', $powiazane_realizacje_posts);
 }
 
-add_action('woocommerce_process_product_meta', 'custom_cross_selling_save_product_field');
+add_action('woocommerce_process_product_meta', 'ustom_cross_powiazane_realizacje_product_field');
 
 
 
-function testt()
+function show_realizacje()
 {
     global $product; // Globalny obiekt produktu WooCommerce
     $product_id = $product->get_id(); // Pobierz ID produktu
 
-    $cross_selling_posts = get_post_meta($product_id, 'powiazane_realizacje', true);
-    $cross_selling_array = explode(',',  $cross_selling_posts);
+    $powiazane_realizacje_posts = get_post_meta($product_id, 'powiazane_realizacje', true);
+    $powiazane_realizacje_array = explode(',',  $powiazane_realizacje_posts);
 
 
-    if (!empty($cross_selling_posts)) { ?>
-        <div class="related bwp_slick-margin-mobile">
-            <div class="title-block">
-                <!-- <h2><?php //echo esc_html__('Nasze Realizacje', 'bumbleb'); ?></h2> -->
-            </div>
-            <div class="content-product-list" style="display:flex;flex-direction:row">
+    if (!empty($powiazane_realizacje_posts)) { ?>
+        <!-- <div class="related bwp_slick-margin-mobile"> -->
+        <!-- <div class="title-block"> -->
+        <!-- <h2><?php //echo esc_html__('Nasze Realizacje', 'bumbleb'); 
+                    ?></h2> -->
+        <!-- </div> -->
+        <div id="realizacja">
+            <?php foreach ($powiazane_realizacje_array as $key => $postID) : ?>
+                <?php
+                 if (is_numeric($postID)) {
+                    $title = get_the_title($postID);
+                    $link = get_permalink($postID);
+                    $thumbnail_url = get_the_post_thumbnail_url($postID, 'small');
+                    if ($thumbnail_url) {
+                        $image = $thumbnail_url;
+                    } else {
+                        $image = '';
+                    }
+                    ganarateTemplate($title, $link, $image);
+                }
+                ?>
+            <?php endforeach; ?>
+        </div>
+        <style>
 
-                    <?php foreach ($cross_selling_array as $key => $postID) : ?>
-                        <?php //echo "Klucz" . $key . " Wartość: " . $postID; ?><br>
+#realizacja{
+    margin-top: 30px;
+    display:flex;
+    flex-direction:row;
+    position: relative;
+}
 
-                        
-                        <?php
+#realizacja:before{
+    content:'Nasza realizacja';
+    position: absolute;
+    top:-21px;
+    z-index: -1;
+    left: 0px;
+    padding:2px 5px;
+    background-color: #f2a015;
+    font-weight: 600;
+}
 
-
-
-
-                        if (is_numeric($postID)) {
-                            $title = get_the_title($postID);
-                            $link = get_permalink($postID);
-                            $thumbnail_url = get_the_post_thumbnail_url($postID, 'small');
-                            if ($thumbnail_url) {
-                                $image = $thumbnail_url;
-                            }else {
-                                $image = '';
-                            }
-                           // echo  $title . " ".   $link . "<br>";
-                            moj_wlasny_modul($title, $link, $image );
-                        }
-
-
-                        // var_dump( $cross_selling_array);
-                        // var_dump($key);
-                        // var_dump($upsell);
-                        // $title = get_the_title($post_id);
-                        // $post_object = get_post( $postID->get_id() );
-                        //setup_postdata( $GLOBALS['post'] =& $post_object );
-                        //wc_get_template_part( 'content-grid', 'product' );
-                        // $post_object = get_post($postID->get_id());
-                        // if ($post_object) {
-                        //     $GLOBALS['post'] = $post_object;
-                        //     setup_postdata($post_object);
-
-                        //     wp_reset_postdata();  // Dobrze jest zresetować dane posta po użyciu setup_postdata
-                        // }
-                        // $post_object = get_post($postID);
-                        // $post_object->ID=3976;
-                        //$post_object->post_title="lllll";
-
-                        // var_dump($GLOBALS['post']);
-                        // if ($post_object) {
-
-                        //     //$GLOBALS['post'] = $post_object;
-
-                        //     // setup_postdata($post_object);
-                        // }
-                        // wc_get_template_part('content-grid', 'product');
-
-                        ?>
-                    <?php endforeach; ?>
-                    </div>
-                </div>
-   
-
+        </style>
+        <!-- </div> -->
 <?php
     }
 }
 
-add_action('woocommerce_product_meta_end', 'testt', 20);
 
 
-
-function addContact(){
-    echo '<i class="fa fa-twitter"></i>';
-}
-
-add_action('woocommerce_share', 'addContact', 10);
+add_action('woocommerce_product_meta_end', 'show_realizacje', 20);
 
 
-
-function moj_wlasny_modul($title, $link, $image ) {
+function ganarateTemplate($title, $link, $image)
+{
     $template = '';
 
-    $template .= '<div style="display: flex; align-items: center;">
-    <img width="100px" style="padding:0.5rem"  src="'. $image . '"  alt="" decoding="async">
-    <h3  style="font-size:1rem; margin:0 auto;"><a href="'. $link .'" tabindex="0">'. $title .'</a></h3>';
+    $template .= '<div style="display: flex; align-items: center;user-select:none">
+    <a href="' . $link . '">
+    <img width="150px" style="padding:0.5rem"  src="' . $image . '"  alt="" decoding="async">
+    <h3  style="font-size:1rem; margin:0 auto;">' . $title . '</a></h3>';
     $template .= '</div>';
 
     // $template .= '<div class="products-list grid">
@@ -160,6 +136,3 @@ function moj_wlasny_modul($title, $link, $image ) {
 
     echo $template;
 }
-
-
-
